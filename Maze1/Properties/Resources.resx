@@ -28,7 +28,7 @@
     </data>
                 
     There are any number of "resheader" rows that contain simple 
-    name/value pairs.
+    name/value segments.
     
     Each data row contains a name, and value. The row also contains a 
     type or mimetype. Type corresponds to a .NET class that support 

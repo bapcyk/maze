@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:Maze1"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+    <Grid x:Name="Grid1">
+        <Canvas x:Name="Canvas" HorizontalAlignment="Left" Height="384" Margin="0,27,0,0" VerticalAlignment="Top" Width="783"/>
+        <ComboBox x:Name="Algorithms" HorizontalAlignment="Left" VerticalAlignment="Top" Width="783" SelectionChanged="Algorithms_SelectionChanged"/>
+
     </Grid>
 </Window>
