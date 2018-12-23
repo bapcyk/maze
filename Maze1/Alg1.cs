@@ -7,6 +7,8 @@ using Maze;
 
 namespace Alg1 {
 
+    using DividedEdges = Tuple<int, Tuple<Edge, Edge>>;
+
     public class Edge : ICloneable {
         public int isoline;
         public Segment[] segments;
@@ -17,18 +19,28 @@ namespace Alg1 {
             segments = ps.OrderBy(e => e, Utils.SegCmp).ToArray();
             direct = d;
         }
-        public static Edge MakeWithDoor(int i, Segment bounds, Direct d) {
-            if (bounds.b - bounds.a + 1 >= (3*Utils.DOOR)) {
+
+        public static Edge WithRandomDoor(int i, Segment bounds, Direct d) {
+            if (bounds.LinearSize() >= (3*Utils.DOOR)) {
                 int pt = Utils.Randomizer.Next(bounds.a + Utils.DOOR, bounds.b - 2 * Utils.DOOR);
                 return new Edge(i, new Segment[] { (bounds.a, pt), (pt + Utils.DOOR, bounds.b) }, d);
             }
             else return null;
         }
+
+        public static Edge WithEndDoor(int i, Segment bounds, Direct d) {
+            if (bounds.LinearSize() >= (2*Utils.DOOR)) {
+                return new Edge(i, new Segment[] { (bounds.a, bounds.b - Utils.DOOR) }, d);
+            }
+            else return null;
+        }
+
         public void Draw(Canvas cnv) {
             foreach ((var a, var b) in segments) {
                 if (a != b) Utils.DrawLine(cnv, isoline, a, b, direct);
             }
         }
+
         public bool PointInDoor(int pt) {
             bool foundWall = false;
             foreach ((var a, var b) in segments) {
@@ -39,6 +51,7 @@ namespace Alg1 {
             }
             return !foundWall;
         }
+
         protected IEnumerable<Segment> SpacesForDivider() {
             int i = 0, len = segments.Length;
             foreach (Segment seg in segments) {
@@ -91,7 +104,7 @@ namespace Alg1 {
 
         public Tuple<Edge, Edge> Divide() {
             foreach (Segment seg in SpacesForDivider()) {
-                int pt = Utils.Randomizer.Next(seg.a, seg.b);
+                int pt = Utils.Randomizer.Next(seg.a, seg.b + 1);
                 Tuple<Edge, Edge> edges = Divide(pt);
                 if (edges != null) return edges;
             }
@@ -130,21 +143,27 @@ namespace Alg1 {
         protected int OppositeEdgeIndex(int edgeIndex) => (edgeIndex + 2) % 4;
         protected int NextEdgeIndex(int edgeIndex) => (edgeIndex + 1) % 4;
 
-        public Tuple<Room, Room> Divide() {
-            Room room1 = (Room)Clone(), room2 = (Room)Clone();
-            int dividedEdgeIndex = -1, i = 0;
-            Tuple<Edge, Edge> dividedEdges = null, dividedOppositeEdges = null;
+        protected IEnumerable<DividedEdges> DividersEdges() {
+            int i = 0;
+            Tuple<Edge, Edge> dividedEdges = null;
             foreach (Edge edge in edges) {
                 dividedEdges = edge.Divide();
                 if (dividedEdges != null) {
-                    dividedEdgeIndex = i;
-                    break;
+                    yield return new DividedEdges(i, dividedEdges);
                 }
                 i++;
             }
-            if (dividedEdges == null) return null;
+        }
+
+        // FIXME compare with null with ReferenctialEquals(); Randomizer.Next() must get a, b+1 to include b
+        public Tuple<Room, Room> Divide() {
+            Room room1 = (Room)Clone(), room2 = (Room)Clone();
+            DividedEdges[] allDividers = DividersEdges().ToArray();
+            if (allDividers.Length == 0) return null;
             else {
+                (var dividedEdgeIndex, var dividedEdges) = allDividers[Utils.Randomizer.Next(allDividers.Length)];
                 // found place for divider and edge was divided
+                Tuple<Edge, Edge> dividedOppositeEdges = null;
                 int dividedOppositeEdgeIndex = OppositeEdgeIndex(dividedEdgeIndex);
                 int dividerPt = dividedEdges.Item1.Bounds().b;
                 dividedOppositeEdges = edges[dividedOppositeEdgeIndex].Divide(dividerPt);
@@ -155,16 +174,21 @@ namespace Alg1 {
                     room2.edges[dividedEdgeIndex] = dividedEdges.Item2;
                     room1.edges[dividedOppositeEdgeIndex] = dividedOppositeEdges.Item1;
                     room2.edges[dividedOppositeEdgeIndex] = dividedOppositeEdges.Item2;
+
                     Edge dividerProto = edges[dividedNextEdgeIndex];
-                    //Edge divider = new Edge(dividerPt,
-                    //new Segment[] { dividerProto.Bounds() },
-                    //dividerProto.direct);
-                    Edge divider = Edge.MakeWithDoor(dividerPt, dividerProto.Bounds(), dividerProto.direct);
+                    Edge divider = null;
+                    if (edges[dividedOppositeEdgeIndex].PointInDoor(dividerPt)) {
+                        // FIXME what if door must be at begining too?
+                        divider = Edge.WithEndDoor(dividerPt, dividerProto.Bounds(), dividerProto.direct);
+                    }
+                    else {
+                        divider = Edge.WithRandomDoor(dividerPt, dividerProto.Bounds(), dividerProto.direct);
+                    }
+
                     if (divider == null) return null;
                     else {
                         room1.edges[dividedNextEdgeIndex] = divider;
                         room2.edges[OppositeEdgeIndex(dividedNextEdgeIndex)] = (Edge)divider.Clone();
-                        // TODO make door
                         return new Tuple<Room, Room>(room1, room2);
                     }
                 }
