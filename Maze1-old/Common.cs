@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace Maze {
     public enum Direct {
@@ -16,12 +17,10 @@ namespace Maze {
         GT, LT, EQ, LE, GE
     }
 
-    public struct Segment : ICloneable {
-        public readonly int a;
-        public readonly int b;
-        public bool visible;
-        public Segment(int ac, int bc, bool v=true) {
-            Trace.Assert(ac != bc, "Empty segment");
+    public struct Segment {
+        public int a;
+        public int b;
+        public Segment(int ac, int bc) {
             if (bc < ac) {
                 a = bc;
                 b = ac;
@@ -29,36 +28,22 @@ namespace Maze {
                 a = ac;
                 b = bc;
             }
-            visible = v;
         }
-        //////////////////////////// Deconstruct to pair //////////////////////////////
         public void Deconstruct(out int ad, out int bd) {
             ad = a;
             bd = b;
         }
-        ////////////////////////////////// ToString ///////////////////////////////////
-        public override string ToString() => $"{a}:{b}";
-
-        //////////////////////////////// Predicates ///////////////////////////////////
         public bool IsNormal() => b >= a;
         public bool IsEmpty() => b == a;
+        public int LinearSize() => b - a + 1;
+        public static implicit operator Segment((int, int) v) => new Segment(v.Item1, v.Item2);
+        public override string ToString() => $"({a}, {b})";
         public bool ContainsPoint(int pt) => a <= pt && pt <= b;
 
-        ////////////////////////////// Other methods //////////////////////////////////
-        public int LinearSize() => b - a + 1;
-
-        public Tuple<Segment, Segment> Split(int pt) {
-            Trace.Assert(ContainsPoint(pt), "Point is out of segment bounds");
-            Trace.Assert(pt != a, "Point on start point");
-            Trace.Assert(pt != b, "Point on end point");
-            return new Tuple<Segment, Segment>(new Segment(a, pt), new Segment(pt, b));
-        }
-        //////////////////////////////// IClonable ////////////////////////////////////
-        public object Clone() => new Segment(a, b, visible);
-
-        ////////////////////////////////// Cast ///////////////////////////////////////
-        public static implicit operator Segment((int, int) v) => new Segment(v.Item1, v.Item2);
-
+        //[ContractInvariantMethod]
+        //void PointsOrder() {
+        //    Contract.Invariant(a <= b);
+        //}
     }
 
     public class SegmentsComparer : IComparer<Segment> {
