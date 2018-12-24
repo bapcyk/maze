@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+//using System.Diagnostics.Contracts;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Controls;
@@ -22,6 +22,7 @@ namespace Alg1 {
         }
 
         public Edge(int i, Segment[] ps, Direct d) {
+            Trace.Assert(ps.Length > 0, "Created empty edge");
             isoline = i;
             segments = ps.OrderBy(e => e, Utils.SegCmp).ToArray();
             direct = d;
@@ -43,8 +44,8 @@ namespace Alg1 {
         }
 
         public void Draw(Canvas cnv) {
-            foreach ((var a, var b) in segments) {
-                if (a != b) Utils.DrawLine(cnv, isoline, a, b, direct);
+            foreach (Segment seg in segments) {
+                if (!seg.IsEmpty() && seg.visible) Utils.DrawLine(cnv, isoline, seg.a, seg.b, direct);
             }
         }
 
@@ -104,9 +105,14 @@ namespace Alg1 {
                         ps2.AddLast(seg);
                         divided = true;
                     }
+                    else {
+                        ps1.AddLast(seg);
+                    }
                 }
             }
             if (divided) {
+                //Trace.Assert(ps1.Count() > 0, "Empty ps1");
+                //Trace.Assert(ps2.Count() > 0, "Empty ps2");
                 return new Tuple<Edge, Edge>(new Edge(isoline, ps1.ToArray(), direct),
                                              new Edge(isoline, ps2.ToArray(), direct));
             }
@@ -133,6 +139,8 @@ namespace Alg1 {
                 }
             }
             if (divided) {
+                Trace.Assert(ps1.Count() > 0, "Empty ps1");
+                Trace.Assert(ps2.Count() > 0, "Empty ps2");
                 return new Tuple<Edge, Edge>(new Edge(isoline, ps1.ToArray(), direct),
                                              new Edge(isoline, ps2.ToArray(), direct));
             }
@@ -152,7 +160,7 @@ namespace Alg1 {
         }
 
         public Segment Bounds() {
-            Debug.Assert(segments.Length > 0);
+            Trace.Assert(segments.Length > 0, "Segments are empty");
             return new Segment(segments[0].a, segments.Last().b);
         }
 
@@ -175,9 +183,7 @@ namespace Alg1 {
         }
 
         public object Clone() {
-            Edge[] es = new Edge[edges.Length];
-            Array.Copy(edges.Select(e => e.Clone()).ToArray(), es, edges.Length);
-            return new Room(es);
+            return new Room(edges.Select(e => (Edge)e.Clone()).ToArray());
         }
 
         public void Draw(Canvas cnv) {

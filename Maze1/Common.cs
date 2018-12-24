@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 
 namespace Maze {
     public enum Direct {
@@ -17,10 +16,11 @@ namespace Maze {
         GT, LT, EQ, LE, GE
     }
 
-    public struct Segment {
-        public int a;
-        public int b;
-        public Segment(int ac, int bc) {
+    public readonly struct Segment {
+        public readonly int a;
+        public readonly int b;
+        public readonly bool visible;
+        public Segment(int ac, int bc, bool v=true) {
             if (bc < ac) {
                 a = bc;
                 b = ac;
@@ -28,6 +28,7 @@ namespace Maze {
                 a = ac;
                 b = bc;
             }
+            visible = v;
         }
         public void Deconstruct(out int ad, out int bd) {
             ad = a;
@@ -40,10 +41,6 @@ namespace Maze {
         public override string ToString() => $"({a}, {b})";
         public bool ContainsPoint(int pt) => a <= pt && pt <= b;
 
-        //[ContractInvariantMethod]
-        //void PointsOrder() {
-        //    Contract.Invariant(a <= b);
-        //}
     }
 
     public class SegmentsComparer : IComparer<Segment> {
