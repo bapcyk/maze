@@ -26,21 +26,23 @@ namespace Maze1 {
         }
 
         private void Algorithms_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            Alg1.Room r = new Alg1.Room(new Alg1.Edge[] {
-                new Alg1.Edge(10, new Segment[] { (10, 500) }, Direct.H),
-                new Alg1.Edge(500, new Segment[] { (10, 200) }, Direct.V),
-                new Alg1.Edge(200, new Segment[] { (10, 500) }, Direct.H),
-                new Alg1.Edge(10, new Segment[] { (10, 200) }, Direct.V)
+            Alg1.Room room = new Alg1.Room(new Alg1.Edge[] {
+                new Alg1.Edge(10, new Segment[] { (10, 700) }, Direct.H),
+                new Alg1.Edge(700, new Segment[] { (10, 400) }, Direct.V),
+                new Alg1.Edge(400, new Segment[] { (10, 700) }, Direct.H),
+                new Alg1.Edge(10, new Segment[] { (10, 400) }, Direct.V)
             });
-            (Alg1.Room r1, Alg1.Room r2) = r.Divide();
-            (Alg1.Room r3, Alg1.Room r4) = r1.Divide();
-            (Alg1.Room r5, Alg1.Room r6) = r2.Divide();
+            foreach (Alg1.Room r in Alg1.Room.Maze(room))
+                r.Draw(Canvas);
+            //(Alg1.Room r1, Alg1.Room r2) = r.Divide();
+            //(Alg1.Room r3, Alg1.Room r4) = r1.Divide();
+            //(Alg1.Room r5, Alg1.Room r6) = r2.Divide();
             //r1.Draw(Canvas);
             //r2.Draw(Canvas);
-            r3.Draw(Canvas);
-            r4.Draw(Canvas);
-            r5.Draw(Canvas);
-            r6.Draw(Canvas);
+            //r3.Draw(Canvas);
+            //r4.Draw(Canvas);
+            //r5.Draw(Canvas);
+            //r6.Draw(Canvas);
         }
     }
 }

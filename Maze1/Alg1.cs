@@ -7,7 +7,8 @@ using Maze;
 
 namespace Alg1 {
 
-    using DividedEdges = Tuple<int, Tuple<Edge, Edge>>;
+    // (index of edge, divider point coord, edges)
+    using DividedEdges = Tuple<int, int, Tuple<Edge, Edge>>;
 
     public class Edge : ICloneable {
         public int isoline;
@@ -53,27 +54,29 @@ namespace Alg1 {
         }
 
         protected IEnumerable<Segment> SpacesForDivider() {
-            int i = 0, len = segments.Length;
-            foreach (Segment seg in segments) {
-                if (len == 1) {
-                    Segment p = new Segment(seg.a + Utils.DOOR, seg.b - Utils.DOOR);
-                    if (p.IsNormal() && !p.IsEmpty()) yield return p;
+            int i = 0;
+            if (segments.Length == 1) {
+                Segment p = new Segment(segments[0].a + Utils.DOOR, segments[0].b - Utils.DOOR);
+                if (p.IsNormal() && !p.IsEmpty()) yield return p;
+            }
+            else {
+                foreach (Segment seg in segments) {
+                    if (i == 0) {
+                            // 1st seg need margin from the wall (for a motion near the wall)
+                            Segment p = new Segment(seg.a + Utils.DOOR, seg.b);
+                            if (p.IsNormal() && !p.IsEmpty()) yield return p;
+                        }
+                        else if (i == segments.Length - 1) {
+                            // last seg also need margin from the wall (for a motion near the wall)
+                            Segment p = new Segment(seg.a, seg.b + Utils.DOOR);
+                            if (p.IsNormal() && !p.IsEmpty()) yield return p;
+                        }
+                        else {
+                            // other segments don't need margins
+                            yield return seg;
+                        }
+                    i++;
                 }
-                else if (i == 0) {
-                    // 1st seg need margin from the wall (for a motion near the wall)
-                    Segment p = new Segment(seg.a + Utils.DOOR, seg.b);
-                    if (p.IsNormal() && !p.IsEmpty()) yield return p;
-                }
-                else if (i == len - 1) {
-                    // last seg also need margin from the wall (for a motion near the wall)
-                    Segment p = new Segment(seg.a, seg.b + Utils.DOOR);
-                    if (p.IsNormal() && !p.IsEmpty()) yield return p;
-                }
-                else {
-                    // other segments don't need margins
-                    yield return seg;
-                }
-                i++;
             }
         }
 
@@ -102,12 +105,13 @@ namespace Alg1 {
             else return null;
         }
 
-        public Tuple<Edge, Edge> Divide() {
+        public Tuple<Edge, Edge> Divide(out int dividerPoint) {
             foreach (Segment seg in SpacesForDivider()) {
-                int pt = Utils.Randomizer.Next(seg.a, seg.b + 1);
-                Tuple<Edge, Edge> edges = Divide(pt);
+                dividerPoint = Utils.Randomizer.Next(seg.a, seg.b + 1);
+                Tuple<Edge, Edge> edges = Divide(dividerPoint);
                 if (edges != null) return edges;
             }
+            dividerPoint = 0;
             return null;
         }
 
@@ -144,30 +148,32 @@ namespace Alg1 {
         protected int NextEdgeIndex(int edgeIndex) => (edgeIndex + 1) % 4;
 
         protected IEnumerable<DividedEdges> DividersEdges() {
-            int i = 0;
+            int i = 0, pt;
             Tuple<Edge, Edge> dividedEdges = null;
             foreach (Edge edge in edges) {
-                dividedEdges = edge.Divide();
+                dividedEdges = edge.Divide(out pt);
                 if (dividedEdges != null) {
-                    yield return new DividedEdges(i, dividedEdges);
+                    yield return new DividedEdges(i, pt, dividedEdges);
                 }
                 i++;
             }
         }
 
-        // FIXME compare with null with ReferenctialEquals(); Randomizer.Next() must get a, b+1 to include b
+        // FIXME compare with null with ReferenctialEquals()
         public Tuple<Room, Room> Divide() {
             Room room1 = (Room)Clone(), room2 = (Room)Clone();
             DividedEdges[] allDividers = DividersEdges().ToArray();
-            if (allDividers.Length == 0) return null;
+            if (allDividers.Length == 0)
+                return null;
             else {
-                (var dividedEdgeIndex, var dividedEdges) = allDividers[Utils.Randomizer.Next(allDividers.Length)];
+                (var dividedEdgeIndex, var dividerPt, var dividedEdges) =
+                    allDividers[Utils.Randomizer.Next(allDividers.Length)];
                 // found place for divider and edge was divided
                 Tuple<Edge, Edge> dividedOppositeEdges = null;
                 int dividedOppositeEdgeIndex = OppositeEdgeIndex(dividedEdgeIndex);
-                int dividerPt = dividedEdges.Item1.Bounds().b;
                 dividedOppositeEdges = edges[dividedOppositeEdgeIndex].Divide(dividerPt);
-                if (dividedOppositeEdges == null) return null;
+                if (dividedOppositeEdges == null)
+                    return null;
                 else {
                     int dividedNextEdgeIndex = NextEdgeIndex(dividedEdgeIndex);
                     room1.edges[dividedEdgeIndex] = dividedEdges.Item1;
@@ -185,13 +191,25 @@ namespace Alg1 {
                         divider = Edge.WithRandomDoor(dividerPt, dividerProto.Bounds(), dividerProto.direct);
                     }
 
-                    if (divider == null) return null;
+                    if (divider == null)
+                        return null;
                     else {
                         room1.edges[dividedNextEdgeIndex] = divider;
                         room2.edges[OppositeEdgeIndex(dividedNextEdgeIndex)] = (Edge)divider.Clone();
                         return new Tuple<Room, Room>(room1, room2);
                     }
                 }
+            }
+        }
+
+        public static IEnumerable<Room> Maze(Room room) {
+            // FIXME (call recursively only for divided)
+            Tuple<Room, Room> dividedRooms = null;
+            dividedRooms = room.Divide();
+            if (dividedRooms == null) yield return room;
+            else {
+                foreach (var r in Maze(dividedRooms.Item1)) yield return r;
+                foreach (var r in Maze(dividedRooms.Item2)) yield return r;
             }
         }
     }
