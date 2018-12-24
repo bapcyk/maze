@@ -27,6 +27,8 @@ namespace Alg1 {
             return !seg?.visible?? true;
         }
 
+        private bool IsDoor() => DoorsNumber() != 0;
+
         ///////////////////////////////// ToString ////////////////////////////////////
         public override string ToString() {
             string ss = String.Join(", ", segments.Select(s => s.ToString()));
@@ -37,6 +39,8 @@ namespace Alg1 {
         public object Clone() => new Edge(isoline, segments.Select(s => (Segment)s.Clone()).ToArray(), dir);
 
         ///////////////////////////// Other methods ///////////////////////////////////
+        private int DoorsNumber() => segments.Where(s => !s.visible).Count();
+
         private Segment Bounds() {
             (int a, int b) = (segments[0].a, segments.Last().b);
             Trace.Assert(b > a, "Abnormal bounds");
