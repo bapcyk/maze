@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace Maze {
     public enum Direct {
@@ -38,6 +39,11 @@ namespace Maze {
         public static implicit operator Segment((int, int) v) => new Segment(v.Item1, v.Item2);
         public override string ToString() => $"({a}, {b})";
         public bool ContainsPoint(int pt) => a <= pt && pt <= b;
+
+        //[ContractInvariantMethod]
+        //void PointsOrder() {
+        //    Contract.Invariant(a <= b);
+        //}
     }
 
     public class SegmentsComparer : IComparer<Segment> {
