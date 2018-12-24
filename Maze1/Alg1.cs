@@ -15,6 +15,11 @@ namespace Alg1 {
         public Segment[] segments;
         public Direct direct;
 
+        public override string ToString() {
+            string segs = String.Join(", ", segments.Select(s => s.ToString()));
+            return $"({isoline}|[{segs}]|{direct}";
+        }
+
         public Edge(int i, Segment[] ps, Direct d) {
             isoline = i;
             segments = ps.OrderBy(e => e, Utils.SegCmp).ToArray();
@@ -139,6 +144,10 @@ namespace Alg1 {
     public class Room : ICloneable {
         public Edge[] edges;
 
+        public override string ToString() {
+            string es = String.Join(", ", edges.Select(s => s.ToString()));
+            return $"[{es}]";
+        }
         public Room(Edge[] es) {
             edges = es;
         }
@@ -214,6 +223,7 @@ namespace Alg1 {
         public static IEnumerable<Room> Maze(Room room) {
             // FIXME (call recursively only for divided)
             Tuple<Room, Room> dividedRooms = null;
+            Utils.Tracer.TraceEvent(TraceEventType.Information, 0, "Maze({0})", room);
             dividedRooms = room.Divide();
             if (dividedRooms == null) yield return room;
             else {

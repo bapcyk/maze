@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Maze {
     public enum Direct {
@@ -50,6 +51,7 @@ namespace Maze {
         public const int DOOR = 20;
         public static Random Randomizer = new Random();
         public static SegmentsComparer SegCmp = new SegmentsComparer();
+        public static TraceSource Tracer = new TraceSource("Maze");
         public static Side OppositeSide(Side s) {
             switch (s) {
                 case Side.TOP: return Side.BOTTOM;
