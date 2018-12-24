@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Controls;
@@ -17,7 +18,7 @@ namespace Alg1 {
 
         public override string ToString() {
             string segs = String.Join(", ", segments.Select(s => s.ToString()));
-            return $"({isoline}|[{segs}]|{direct}";
+            return $"<Edge {isoline}|{segs}|{direct} Edge>";
         }
 
         public Edge(int i, Segment[] ps, Direct d) {
@@ -85,29 +86,50 @@ namespace Alg1 {
             }
         }
 
+        // FIXME leads to error
         public Tuple<Edge, Edge> ForceDivide(int pt) {
             bool divided = false;
-            List<Segment> ps1 = new List<Segment>(), ps2 = new List<Segment>();
-            foreach ((var a, var b) in segments) {
-                ;
+            LinkedList<Segment> ps1 = new LinkedList<Segment>(), ps2 = new LinkedList<Segment>();
+            foreach (Segment seg in segments) {
+                if (divided) {
+                    ps2.AddLast(seg);
+                }
+                else {
+                    if (seg.a <= pt && pt <= seg.b) {
+                        ps1.AddLast(new Segment(seg.a, pt));
+                        ps2.AddLast(new Segment(pt, seg.b));
+                        divided = true;
+                    }
+                    if (pt <= seg.a) {
+                        ps2.AddLast(seg);
+                        divided = true;
+                    }
+                }
             }
-            // TODO
-            return null;
+            if (divided) {
+                return new Tuple<Edge, Edge>(new Edge(isoline, ps1.ToArray(), direct),
+                                             new Edge(isoline, ps2.ToArray(), direct));
+            }
+            else {
+                return null;
+            }
         }
 
         public Tuple<Edge, Edge> Divide(int pt) {
+            //Contract.Requires(Bounds().ContainsPoint(pt)); // FIXME fails
+            //Contract.Ensures(Contract.Result<Tuple<Edge, Edge>>() );
             // segments of 1st edge (before division point) and 2nd edge (after the division point)
-            List<Segment> ps1 = new List<Segment>(), ps2 = new List<Segment>();
+            LinkedList<Segment> ps1 = new LinkedList<Segment>(), ps2 = new LinkedList<Segment>();
             bool divided = false;
             foreach ((var a, var b) in segments) {
                 if (a <= pt && pt <= b) {
-                    ps1.Add(new Segment(a, pt));
-                    ps2.Add(new Segment(pt, b));
+                    ps1.AddLast(new Segment(a, pt));
+                    ps2.AddLast(new Segment(pt, b));
                     divided = true;
                 }
                 else {
-                    if (divided) ps1.Add(new Segment(a, b));
-                    else ps2.Add(new Segment(a, b));
+                    if (divided) ps1.AddLast(new Segment(a, b));
+                    else ps2.AddLast(new Segment(a, b));
                 }
             }
             if (divided) {
@@ -146,7 +168,7 @@ namespace Alg1 {
 
         public override string ToString() {
             string es = String.Join(", ", edges.Select(s => s.ToString()));
-            return $"[{es}]";
+            return $"<Room {es} Room>";
         }
         public Room(Edge[] es) {
             edges = es;
@@ -166,10 +188,10 @@ namespace Alg1 {
         protected int NextEdgeIndex(int edgeIndex) => (edgeIndex + 1) % 4;
 
         protected IEnumerable<DividedEdges> DividersEdges() {
-            int i = 0, pt;
+            int i = 0;
             Tuple<Edge, Edge> dividedEdges = null;
             foreach (Edge edge in edges) {
-                dividedEdges = edge.Divide(out pt);
+                dividedEdges = edge.Divide(out int pt);
                 if (dividedEdges != null) {
                     yield return new DividedEdges(i, pt, dividedEdges);
                 }
@@ -189,7 +211,7 @@ namespace Alg1 {
                 // found place for divider and edge was divided
                 Tuple<Edge, Edge> dividedOppositeEdges = null;
                 int dividedOppositeEdgeIndex = OppositeEdgeIndex(dividedEdgeIndex);
-                dividedOppositeEdges = edges[dividedOppositeEdgeIndex].Divide(dividerPt);
+                dividedOppositeEdges = edges[dividedOppositeEdgeIndex].ForceDivide(dividerPt);
                 if (dividedOppositeEdges == null)
                     return null;
                 else {
@@ -221,7 +243,6 @@ namespace Alg1 {
         }
 
         public static IEnumerable<Room> Maze(Room room) {
-            // FIXME (call recursively only for divided)
             Tuple<Room, Room> dividedRooms = null;
             Utils.Tracer.TraceEvent(TraceEventType.Information, 0, "Maze({0})", room);
             dividedRooms = room.Divide();

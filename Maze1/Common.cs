@@ -37,6 +37,7 @@ namespace Maze {
         public int LinearSize() => b - a + 1;
         public static implicit operator Segment((int, int) v) => new Segment(v.Item1, v.Item2);
         public override string ToString() => $"({a}, {b})";
+        public bool ContainsPoint(int pt) => a <= pt && pt <= b;
     }
 
     public class SegmentsComparer : IComparer<Segment> {
