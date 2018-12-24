@@ -34,7 +34,6 @@ namespace Maze1 {
             });
             foreach (Alg1.Room r in Alg1.Room.Maze(room)) {
                 r.Draw(Canvas);
-                System.Threading.Thread.Sleep(1000);
             }
             //(Alg1.Room r1, Alg1.Room r2) = r.Divide();
             //(Alg1.Room r3, Alg1.Room r4) = r1.Divide();
