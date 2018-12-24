@@ -80,11 +80,19 @@ namespace Alg1 {
             }
         }
 
+        public Tuple<Edge, Edge> ForceDivide(int pt) {
+            bool divided = false;
+            List<Segment> ps1 = new List<Segment>(), ps2 = new List<Segment>();
+            foreach ((var a, var b) in segments) {
+                ;
+            }
+            // TODO
+            return null;
+        }
+
         public Tuple<Edge, Edge> Divide(int pt) {
-            Segment[] nosegments = new Segment[]{};
             // segments of 1st edge (before division point) and 2nd edge (after the division point)
             List<Segment> ps1 = new List<Segment>(), ps2 = new List<Segment>();
-            Edge e1 = new Edge(isoline, nosegments, direct), e2 = new Edge(isoline, nosegments, direct);
             bool divided = false;
             foreach ((var a, var b) in segments) {
                 if (a <= pt && pt <= b) {
@@ -98,11 +106,12 @@ namespace Alg1 {
                 }
             }
             if (divided) {
-                e1.segments = ps1.ToArray();
-                e2.segments = ps2.ToArray();
-                return new Tuple<Edge, Edge>(e1, e2);
+                return new Tuple<Edge, Edge>(new Edge(isoline, ps1.ToArray(), direct),
+                                             new Edge(isoline, ps2.ToArray(), direct));
             }
-            else return null;
+            else {
+                return null;
+            }
         }
 
         public Tuple<Edge, Edge> Divide(out int dividerPoint) {
