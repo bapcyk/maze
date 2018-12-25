@@ -54,7 +54,7 @@ namespace Maze {
             Trace.Assert(ContainsPoint(pt), "Point is out of segment bounds");
             Trace.Assert(pt != a, "Point on start point");
             Trace.Assert(pt != b, "Point on end point");
-            return new Tuple<Segment, Segment>(new Segment(a, pt), new Segment(pt, b));
+            return new Tuple<Segment, Segment>(new Segment(a, pt, visible), new Segment(pt, b, visible));
         }
         //////////////////////////////// IClonable ////////////////////////////////////
         public object Clone() => new Segment(a, b, visible);

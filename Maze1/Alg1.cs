@@ -21,6 +21,10 @@ namespace Alg1 {
         }
 
         ////////////////////////////// Factories //////////////////////////////////////
+        public static Edge Simple(int isoline, int a, int b, Direct dir) {
+            return new Edge(isoline, new Segment[] { new Segment(a, b, true) }, dir);
+        }
+
         public static Edge WithRandomDoor(int isoline, Segment bounds, Direct dir) {
             if (bounds.LinearSize() >= (3 * Utils.DOOR)) {
                 int pt = Utils.Randomizer.Next(bounds.a + Utils.DOOR, bounds.b - 2 * Utils.DOOR);
@@ -130,19 +134,19 @@ namespace Alg1 {
             if (segments.Length == 1) {
                 Trace.Assert(segments[0].visible, "Edge cannot contain door only");
                 (a, b) = (segments[0].a + Utils.DOOR, segments[0].b - Utils.DOOR);
-                if (IsPairOk(a, b)) yield return new Segment(a, b, true);
+                if (IsPairOk(a, b)) yield return new Segment(a, b, segments[0].visible);
             }
             int i = 0;
             foreach (Segment seg in segments) {
                 if (i == 0) {
                     (a, b) = (seg.a + Utils.DOOR, seg.b);
                     Trace.Assert(seg.visible, "Edge's first segment cannot be door");
-                    if (IsPairOk(a, b)) yield return new Segment(a, b, true);
+                    if (IsPairOk(a, b)) yield return new Segment(a, b, seg.visible);
                 }
                 else if (i == segments.Length - 1) {
                     (a, b) = (seg.a, seg.b - Utils.DOOR);
                     Trace.Assert(seg.visible, "Edge's last segment cannot be door");
-                    if (IsPairOk(a, b)) yield return new Segment(a, b, true);
+                    if (IsPairOk(a, b)) yield return new Segment(a, b, seg.visible);
                 }
                 else if (seg.visible) {
                     yield return seg;
@@ -150,6 +154,66 @@ namespace Alg1 {
                 i++;
             }
         }
+
+        protected Tuple<Edge, Edge> Divide() {
+            Segment[] spaces = SpacesForDivider().ToArray();
+            if (spaces.Length == 0) {
+                return null; // no more spaces for division
+            }
+            else {
+                int dividerSegmentIdx = Utils.Randomizer.Next(spaces.Length);
+                Segment dividerSpace = spaces[dividerSegmentIdx];
+                int dividerPt = Utils.Randomizer.Next(dividerSpace.a, dividerSpace.b + 1);
+                return Split(dividerPt);
+            }
+        }
+
+    }
+
+    public class Room : ICloneable {
+        private readonly Edge[] edges = new Edge[4];
+
+        public Room(Edge[] edges) {
+            Trace.Assert(edges.Length == 4, "Room needs 4 edges");
+            this.edges = edges;
+        }
+
+        public Room(Edge top, Edge right, Edge bottom, Edge left) {
+            this.edges[0] = top;
+            this.edges[1] = right;
+            this.edges[2] = bottom;
+            this.edges[3] = left;
+        }
+
+        //////////////////////////////// Factories ////////////////////////////////////
+        public static Room Initial(int x1, int y1, int x2, int y2) =>
+            new Room(Edge.WithRandomDoor(y1, (Segment)(x1, x2), Direct.H),
+                     Edge.Simple(x2, y1, y2, Direct.V),
+                     Edge.WithRandomDoor(y2, (Segment)(x1, x2), Direct.H),
+                     Edge.Simple(x1, y1, y2, Direct.V));
+
+        //////////////////////////////// ToString /////////////////////////////////////
+        public override string ToString() {
+            string es = String.Join(", ", edges.Select(s => s.ToString()));
+            return $"<Room {es} Room>";
+        }
+
+        /////////////////////////////// IClonable /////////////////////////////////////
+        public object Clone() {
+            return new Room(edges.Select(e => (Edge)e.Clone()).ToArray());
+        }
+
+        /////////////////////////////// Other methods /////////////////////////////////
+        public void Draw(Canvas cnv) {
+            foreach (Edge e in edges) e.Draw(cnv);
+        }
+
+        protected int OppositeEdgeIndex(int edgeIndex) => (edgeIndex + 2) % 4;
+        protected int NextEdgeIndex(int edgeIndex) => (edgeIndex + 1) % 4;
+
+        //protected Tuple<Room, Room> Divide() {
+        //    ;
+        //}
 
     }
 }

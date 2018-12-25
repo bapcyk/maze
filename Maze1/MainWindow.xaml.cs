@@ -26,12 +26,13 @@ namespace Maze1 {
         }
 
         private void Algorithms_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            //Alg1.Room room = new Alg1.Room(new Alg1.Edge[] {
+            //Alg1.Room room = new Alg1.Room(
             //    new Alg1.Edge(10, new Segment[] { (10, 700) }, Direct.H),
             //    new Alg1.Edge(700, new Segment[] { (10, 400) }, Direct.V),
             //    new Alg1.Edge(400, new Segment[] { (10, 700) }, Direct.H),
-            //    new Alg1.Edge(10, new Segment[] { (10, 400) }, Direct.V)
-            //});
+            //    new Alg1.Edge(10, new Segment[] { (10, 400) }, Direct.V));
+            Alg1.Room room = Alg1.Room.Initial(10, 10, 700, 400);
+            room.Draw(Canvas);
             //foreach (Alg1.Room r in Alg1.Room.Maze(room)) {
             //    r.Draw(Canvas);
             //}
