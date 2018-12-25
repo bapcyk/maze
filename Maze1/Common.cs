@@ -15,21 +15,24 @@ namespace Maze {
     public enum CmpResult {
         GT, LT, EQ, LE, GE
     }
+    public enum End {
+        START, END
+    }
 
     public struct Segment : ICloneable {
         public readonly int a;
         public readonly int b;
         public bool visible;
-        public Segment(int ac, int bc, bool v=true) {
-            Trace.Assert(ac != bc, "Empty segment");
-            if (bc < ac) {
-                a = bc;
-                b = ac;
+        public Segment(int a, int b, bool visible=true) {
+            Trace.Assert(a != b, "Empty segment");
+            if (b < a) {
+                this.a = b;
+                this.b = a;
             } else {
-                a = ac;
-                b = bc;
+                this.a = a;
+                this.b = b;
             }
-            visible = v;
+            this.visible = visible;
         }
         //////////////////////////// Deconstruct to pair //////////////////////////////
         public void Deconstruct(out int ad, out int bd) {

@@ -12,11 +12,50 @@ namespace Alg1 {
         private readonly Direct dir;
         private readonly Segment[] segments = new Segment[0];
 
-        public Edge(int iso, Segment[] segs, Direct d) {
+        public Edge(int isoline, Segment[] segs, Direct dir) {
             Trace.Assert(segs.Length != 0, "Empty edge");
-            isoline = iso;
-            segments = segs;
-            dir = d;
+            this.isoline = isoline;
+            this.segments = segs.OrderBy(e => e, Utils.SegCmp).ToArray();
+            this.segments = segs;
+            this.dir = dir;
+        }
+
+        ////////////////////////////// Factories //////////////////////////////////////
+        public static Edge WithRandomDoor(int isoline, Segment bounds, Direct dir) {
+            if (bounds.LinearSize() >= (3 * Utils.DOOR)) {
+                int pt = Utils.Randomizer.Next(bounds.a + Utils.DOOR, bounds.b - 2 * Utils.DOOR);
+                Edge ret = new Edge(isoline,
+                    new Segment[]{ new Segment(bounds.a, pt, true),
+                                   new Segment(pt, pt + Utils.DOOR, false),
+                                   new Segment(pt + Utils.DOOR, bounds.b, true) },
+                    dir);
+                Trace.Assert(ret.Bounds().LinearSize() >= (3 * Utils.DOOR), "Edge with random door is too small");
+                return ret;
+            }
+            else return null;
+        }
+
+        public static Edge WithEndDoor(int isoline, Segment bounds, Direct dir, End end) {
+            if (bounds.LinearSize() >= (2 * Utils.DOOR)) {
+                Edge ret = null;
+                switch (end) {
+                    case End.START:
+                        ret = new Edge(isoline,
+                            new Segment[] { new Segment(bounds.a, bounds.a + Utils.DOOR, false),
+                                            new Segment(bounds.a + Utils.DOOR, bounds.b, true) },
+                            dir);
+                        break;
+                    case End.END:
+                        ret = new Edge(isoline,
+                            new Segment[] { new Segment(bounds.a, bounds.b - Utils.DOOR, true),
+                                            new Segment(bounds.b - Utils.DOOR, bounds.b, false) },
+                            dir);
+                        break;
+                }
+                Trace.Assert(ret.Bounds().LinearSize() >= (2 * Utils.DOOR), "Edge with end door is too small");
+                return ret;
+            }
+            else return null;
         }
 
         //////////////////////////////// Predicates ///////////////////////////////////
@@ -39,6 +78,13 @@ namespace Alg1 {
         public object Clone() => new Edge(isoline, segments.Select(s => (Segment)s.Clone()).ToArray(), dir);
 
         ///////////////////////////// Other methods ///////////////////////////////////
+        public void Draw(Canvas cnv) {
+            foreach (Segment seg in segments) {
+                Trace.Assert(!seg.IsEmpty(), "Attempt to draw empty segment");
+                if (seg.visible) Utils.DrawLine(cnv, isoline, seg.a, seg.b, dir);
+            }
+        }
+
         private int DoorsNumber() => segments.Where(s => !s.visible).Count();
 
         private Segment Bounds() {
@@ -74,6 +120,35 @@ namespace Alg1 {
             }
             return new Tuple<Edge, Edge>(new Edge(isoline, segsOfPart1.ToArray(), dir),
                                          new Edge(isoline, segsOfPart2.ToArray(), dir));
+        }
+
+        protected IEnumerable<Segment> SpacesForDivider() {
+            // Is Pair OK: normal?
+            bool IsPairOk(int x, int y) => x >= 0 && y >= 0 && y >= x;
+
+            int a, b;
+            if (segments.Length == 1) {
+                Trace.Assert(segments[0].visible, "Edge cannot contain door only");
+                (a, b) = (segments[0].a + Utils.DOOR, segments[0].b - Utils.DOOR);
+                if (IsPairOk(a, b)) yield return new Segment(a, b, true);
+            }
+            int i = 0;
+            foreach (Segment seg in segments) {
+                if (i == 0) {
+                    (a, b) = (seg.a + Utils.DOOR, seg.b);
+                    Trace.Assert(seg.visible, "Edge's first segment cannot be door");
+                    if (IsPairOk(a, b)) yield return new Segment(a, b, true);
+                }
+                else if (i == segments.Length - 1) {
+                    (a, b) = (seg.a, seg.b - Utils.DOOR);
+                    Trace.Assert(seg.visible, "Edge's last segment cannot be door");
+                    if (IsPairOk(a, b)) yield return new Segment(a, b, true);
+                }
+                else if (seg.visible) {
+                    yield return seg;
+                }
+                i++;
+            }
         }
 
     }
