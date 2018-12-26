@@ -61,7 +61,7 @@ namespace Maze {
         public override string ToString() => $"{a}:{b}";
 
         //////////////////////////////// Predicates ///////////////////////////////////
-        public bool IsNormal() => b >= a;
+        public bool IsNormal() => b > a;
         public bool IsEmpty() => b == a;
         public bool ContainsPoint(int pt) => a < pt && pt < b;
 
