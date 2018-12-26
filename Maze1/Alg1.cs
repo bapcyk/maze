@@ -155,12 +155,13 @@ namespace Alg1 {
 
             int a, b;
             if (Segments.Length == 1) {
-                Trace.Assert(Segments[0].Visible, "Edge cannot contain door only");
+                //Trace.Assert(Segments[0].Visible, $"Edge {this} cannot contain door only");
                 (a, b) = (Segments[0].a + Utils.DOOR, Segments[0].b - Utils.DOOR);
-                if (IsPairOk(a, b)) yield return new Segment(a, b, Segments[0].Visible);
+                if (Segments[0].Visible && IsPairOk(a, b)) yield return new Segment(a, b, Segments[0].Visible);
             }
             int i = 0;
             foreach (Segment seg in Segments) {
+                if (!seg.Visible) { i++; continue; } // FIXME ?
                 if (i == 0) {
                     (a, b) = (seg.a + Utils.DOOR, seg.b - Utils.DOOR);
                     //Trace.Assert(seg.Visible, "Edge's first segment cannot be door");
@@ -186,7 +187,7 @@ namespace Alg1 {
             else {
                 int divSegmentIdx = Utils.Randomizer.Next(spaces.Length);
                 Segment divSpace = spaces[divSegmentIdx];
-                int divPt = Utils.Randomizer.Next(divSpace.a + 1, divSpace.b);
+                int divPt = Utils.Randomizer.Next(divSpace.a, divSpace.b); // FIXME +1 why?
                 Utils.Log($"Random {divPt} in space {divSpace}; edge {this}");
                 return Split(divPt);
             }
