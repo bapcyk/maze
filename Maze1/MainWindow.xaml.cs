@@ -32,10 +32,10 @@ namespace Maze1 {
             //    new Alg1.Edge(400, new Segment[] { (10, 700) }, Direct.H),
             //    new Alg1.Edge(10, new Segment[] { (10, 400) }, Direct.V));
             Alg1.Room room = Alg1.Room.Initial(10, 10, 700, 400);
-            room.Draw(Canvas);
-            //foreach (Alg1.Room r in Alg1.Room.Maze(room)) {
-            //    r.Draw(Canvas);
-            //}
+            //room.Draw(Canvas);
+            foreach (Alg1.Room r in Alg1.Room.Maze(room)) {
+                r.Draw(Canvas);
+            }
             //(Alg1.Room r1, Alg1.Room r2) = r.Divide();
             //(Alg1.Room r3, Alg1.Room r4) = r1.Divide();
             //(Alg1.Room r5, Alg1.Room r6) = r2.Divide();

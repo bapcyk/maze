@@ -7,17 +7,28 @@ using System.Windows.Controls;
 using Maze;
 
 namespace Alg1 {
-    public class Edge : ICloneable {
-        private readonly int isoline;
-        private readonly Direct dir;
-        private readonly Segment[] segments = new Segment[0];
+    struct EdgeOfDivider {
+        public readonly int EdgeIdx;
+        public readonly int Point;
+        public readonly Tuple<Edge, Edge> Edges;
+        public EdgeOfDivider(int edgeIdx, int point, Tuple<Edge, Edge> edges) {
+            EdgeIdx = edgeIdx;
+            Point = point;
+            Edges = edges;
+        }
+    }
+
+    class Edge : ICloneable {
+        public int Isoline { get; }
+        public Direct Dir { get; }
+        public Segment[] Segments { get; } = new Segment[0];
 
         public Edge(int isoline, Segment[] segs, Direct dir) {
             Trace.Assert(segs.Length != 0, "Empty edge");
-            this.isoline = isoline;
-            this.segments = segs.OrderBy(e => e, Utils.SegCmp).ToArray();
-            this.segments = segs;
-            this.dir = dir;
+            this.Isoline = isoline;
+            this.Segments = segs.OrderBy(e => e, Utils.SegCmp).ToArray();
+            this.Segments = segs;
+            this.Dir = dir;
         }
 
         ////////////////////////////// Factories //////////////////////////////////////
@@ -63,7 +74,7 @@ namespace Alg1 {
         }
 
         //////////////////////////////// Predicates ///////////////////////////////////
-        private bool IsPointInDoor(int pt) {
+        public bool IsPointInDoor(int pt) {
             Trace.Assert(Bounds().ContainsPoint(pt), "Point out of edge bounds");
             Segment? seg = SegmentWithPoint(pt);
             Trace.Assert(seg != null, "No segment with this point");
@@ -74,31 +85,31 @@ namespace Alg1 {
 
         ///////////////////////////////// ToString ////////////////////////////////////
         public override string ToString() {
-            string ss = String.Join(", ", segments.Select(s => s.ToString()));
-            return $"<Edge {dir} {isoline}=>{ss} Edge>";
+            string ss = String.Join(", ", Segments.Select(s => s.ToString()));
+            return $"<Edge {Dir} {Isoline}=>{ss} Edge>";
         }
 
         //////////////////////////////// ICloneable ///////////////////////////////////
-        public object Clone() => new Edge(isoline, segments.Select(s => (Segment)s.Clone()).ToArray(), dir);
+        public object Clone() => new Edge(Isoline, Segments.Select(s => (Segment)s.Clone()).ToArray(), Dir);
 
         ///////////////////////////// Other methods ///////////////////////////////////
         public void Draw(Canvas cnv) {
-            foreach (Segment seg in segments) {
+            foreach (Segment seg in Segments) {
                 Trace.Assert(!seg.IsEmpty(), "Attempt to draw empty segment");
-                if (seg.visible) Utils.DrawLine(cnv, isoline, seg.a, seg.b, dir);
+                if (seg.Visible) Utils.DrawLine(cnv, Isoline, seg.a, seg.b, Dir);
             }
         }
 
-        private int DoorsNumber() => segments.Where(s => !s.visible).Count();
+        private int DoorsNumber() => Segments.Where(s => !s.Visible).Count();
 
-        private Segment Bounds() {
-            (int a, int b) = (segments[0].a, segments.Last().b);
+        public Segment Bounds() {
+            (int a, int b) = (Segments[0].a, Segments.Last().b);
             Trace.Assert(b > a, "Abnormal bounds");
             return (a, b);
         }
 
         private Segment? SegmentWithPoint(int pt) {
-            foreach (Segment seg in segments) {
+            foreach (Segment seg in Segments) {
                 if (seg.ContainsPoint(pt)) return seg;
             }
             return null;
@@ -108,7 +119,7 @@ namespace Alg1 {
             Trace.Assert(Bounds().ContainsPoint(pt), "Point out of edge bounds");
             LinkedList<Segment> segsOfPart1 = new LinkedList<Segment>(), segsOfPart2 = new LinkedList<Segment>();
             bool divided = false;
-            foreach (Segment seg in segments) {
+            foreach (Segment seg in Segments) {
                 if (divided) { // already divided, so add to 2nd part
                     segsOfPart2.AddLast(seg);
                 }
@@ -122,55 +133,59 @@ namespace Alg1 {
                     segsOfPart1.AddLast(seg);
                 }
             }
-            return new Tuple<Edge, Edge>(new Edge(isoline, segsOfPart1.ToArray(), dir),
-                                         new Edge(isoline, segsOfPart2.ToArray(), dir));
+            //if (0==segsOfPart1.Count())
+            Trace.Assert(segsOfPart1.Count() != 0, "First part of split is empty");
+            //if (0==segsOfPart2.Count())
+            Trace.Assert(segsOfPart2.Count() != 0, "Second part of split is empty");
+            return new Tuple<Edge, Edge>(new Edge(Isoline, segsOfPart1.ToArray(), Dir),
+                                         new Edge(Isoline, segsOfPart2.ToArray(), Dir));
         }
 
         protected IEnumerable<Segment> SpacesForDivider() {
             // Is Pair OK: normal?
-            bool IsPairOk(int x, int y) => x >= 0 && y >= 0 && y >= x;
+            bool IsPairOk(int x, int y) => x >= 0 && y >= 0 && y - x > 1;
 
             int a, b;
-            if (segments.Length == 1) {
-                Trace.Assert(segments[0].visible, "Edge cannot contain door only");
-                (a, b) = (segments[0].a + Utils.DOOR, segments[0].b - Utils.DOOR);
-                if (IsPairOk(a, b)) yield return new Segment(a, b, segments[0].visible);
+            if (Segments.Length == 1) {
+                Trace.Assert(Segments[0].Visible, "Edge cannot contain door only");
+                (a, b) = (Segments[0].a + Utils.DOOR, Segments[0].b - Utils.DOOR);
+                if (IsPairOk(a, b)) yield return new Segment(a, b, Segments[0].Visible);
             }
             int i = 0;
-            foreach (Segment seg in segments) {
+            foreach (Segment seg in Segments) {
                 if (i == 0) {
-                    (a, b) = (seg.a + Utils.DOOR, seg.b);
-                    Trace.Assert(seg.visible, "Edge's first segment cannot be door");
-                    if (IsPairOk(a, b)) yield return new Segment(a, b, seg.visible);
+                    (a, b) = (seg.a + Utils.DOOR, seg.b - Utils.DOOR);
+                    //Trace.Assert(seg.Visible, "Edge's first segment cannot be door");
+                    if (IsPairOk(a, b)) yield return new Segment(a, b, seg.Visible);
                 }
-                else if (i == segments.Length - 1) {
-                    (a, b) = (seg.a, seg.b - Utils.DOOR);
-                    Trace.Assert(seg.visible, "Edge's last segment cannot be door");
-                    if (IsPairOk(a, b)) yield return new Segment(a, b, seg.visible);
+                else if (i == Segments.Length - 1) {
+                    (a, b) = (seg.a + Utils.DOOR, seg.b - Utils.DOOR);
+                    //Trace.Assert(seg.Visible, "Edge's last segment cannot be door");
+                    if (IsPairOk(a, b)) yield return new Segment(a, b, seg.Visible);
                 }
-                else if (seg.visible) {
+                else if (seg.Visible) {
                     yield return seg;
                 }
                 i++;
             }
         }
 
-        protected Tuple<Edge, Edge> Divide() {
+        public Tuple<Edge, Edge> Divide() {
             Segment[] spaces = SpacesForDivider().ToArray();
             if (spaces.Length == 0) {
                 return null; // no more spaces for division
             }
             else {
-                int dividerSegmentIdx = Utils.Randomizer.Next(spaces.Length);
-                Segment dividerSpace = spaces[dividerSegmentIdx];
-                int dividerPt = Utils.Randomizer.Next(dividerSpace.a, dividerSpace.b + 1);
-                return Split(dividerPt);
+                int divSegmentIdx = Utils.Randomizer.Next(spaces.Length);
+                Segment divSpace = spaces[divSegmentIdx];
+                int divPt = Utils.Randomizer.Next(divSpace.a + 1, divSpace.b);
+                return Split(divPt);
             }
         }
 
     }
 
-    public class Room : ICloneable {
+    class Room : ICloneable {
         private readonly Edge[] edges = new Edge[4];
 
         public Room(Edge[] edges) {
@@ -211,9 +226,97 @@ namespace Alg1 {
         protected int OppositeEdgeIndex(int edgeIndex) => (edgeIndex + 2) % 4;
         protected int NextEdgeIndex(int edgeIndex) => (edgeIndex + 1) % 4;
 
-        //protected Tuple<Room, Room> Divide() {
-        //    ;
-        //}
+        protected bool RandomDivider(out int edgeIdx, out int divPt, out Tuple<Edge, Edge> divEdges) {
+            IEnumerable<EdgeOfDivider> PossibleDividers() {
+                int i = 0, pt;
+                Tuple<Edge, Edge> divedges = null;
+                foreach (Edge edge in edges) {
+                    divedges = edge.Divide();
+                    if (divedges != null) {
+                        pt = divedges.Item1.Bounds().b;
+                        yield return new EdgeOfDivider(i, pt, divedges);
+                    }
+                    i++;
+                }
+            }
+            EdgeOfDivider[] possibleDividers = PossibleDividers().ToArray();
+            if (possibleDividers.Length == 0) {
+                edgeIdx = 0;
+                divPt = 0;
+                divEdges = null;
+                return false;
+            }
+            else {
+                EdgeOfDivider found = possibleDividers[Utils.Randomizer.Next(0, possibleDividers.Length)];
+                edgeIdx = found.EdgeIdx;
+                divPt = found.Point;
+                divEdges = found.Edges;
+                return true;
+            }
+        }
+
+        protected Tuple<Room, Room> Divide() {
+            if (!RandomDivider(out int edgeIdx, out int divPt, out Tuple<Edge, Edge> divEdges)) {
+                return null;
+            }
+            else {
+                // random edge for divider was found, so try to unconditionally divide opposite edge
+                int oppEdgeIdx = OppositeEdgeIndex(edgeIdx); // index of edge opposite to edge where divider begins
+                Tuple<Edge, Edge> oppDivEdges = edges[oppEdgeIdx].Split(divPt);
+                if (oppDivEdges == null) return null; // if it's impossible, divide of room is impossible
+                else {
+                    Edge[] edges1 = new Edge[4], edges2 = new Edge[4]; // edges of new rooms
+                    Edge divider = null;
+                    int nextEdgeIdx = NextEdgeIndex(edgeIdx); // edge index next to the edge where divider begins
+                    Edge nextEdge = edges[nextEdgeIdx]; // edge next to the divider origin edge
+                    // solve length of divider (if opposite edge is door, then make it shorter)
+                    if (edges[oppEdgeIdx].IsPointInDoor(divPt)) {
+                        // got in door - make divider shorter
+                        if (edgeIdx == 0 || edgeIdx == 3) {
+                            // Orientation of divider leads to door at end
+                            divider = Edge.WithEndDoor(divPt, nextEdge.Bounds(), nextEdge.Dir, End.END);
+                        }
+                        else {
+                            // Orientation of divider leads to door at start
+                            divider = Edge.WithEndDoor(divPt, nextEdge.Bounds(), nextEdge.Dir, End.START);
+                        }
+                    }
+                    else {
+                        // no door, so make divider with random placed door
+                        divider = Edge.WithRandomDoor(divPt, nextEdge.Bounds(), nextEdge.Dir);
+                    }
+                    if (divider == null) {
+                        // no space for door
+                        return null;
+                    }
+                    else {
+                        int lastEdgeIdx = NextEdgeIndex(oppEdgeIdx); // last edge of room1,2
+                        // room1
+                        edges1[edgeIdx] = divEdges.Item1;
+                        edges1[nextEdgeIdx] = divider;
+                        edges1[oppEdgeIdx] = oppDivEdges.Item1;
+                        edges1[lastEdgeIdx] = edges[lastEdgeIdx];
+                        // room2
+                        edges2[edgeIdx] = divEdges.Item2;
+                        edges2[nextEdgeIdx] = edges[nextEdgeIdx];
+                        edges2[oppEdgeIdx] = oppDivEdges.Item2;
+                        edges2[lastEdgeIdx] = divider;
+                        return new Tuple<Room, Room>(new Room(edges1), new Room(edges2));
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<Room> Maze(Room room) {
+            Tuple<Room, Room> dividedRooms = null;
+            Utils.Log($"Maze({room})");
+            dividedRooms = room.Divide();
+            if (dividedRooms == null) yield return room;
+            else {
+                foreach (var r in Maze(dividedRooms.Item1)) yield return r;
+                foreach (var r in Maze(dividedRooms.Item2)) yield return r;
+            }
+        }
 
     }
 }

@@ -22,8 +22,26 @@ namespace Maze {
     public struct Segment : ICloneable {
         public readonly int a;
         public readonly int b;
-        public bool visible;
-        public Segment(int a, int b, bool visible=true) {
+        public readonly bool? visible;
+        public bool Visible {
+            get {
+                Trace.Assert(visible != null, "Try to get visible attribute without to setup it");
+                return (bool)visible;
+            }
+        }
+        public Segment(int a, int b) {
+            Trace.Assert(a != b, "Empty segment");
+            if (b < a) {
+                this.a = b;
+                this.b = a;
+            } else {
+                this.a = a;
+                this.b = b;
+            }
+            this.visible = null;
+        }
+
+        public Segment(int a, int b, bool visible) {
             Trace.Assert(a != b, "Empty segment");
             if (b < a) {
                 this.a = b;
@@ -45,7 +63,7 @@ namespace Maze {
         //////////////////////////////// Predicates ///////////////////////////////////
         public bool IsNormal() => b >= a;
         public bool IsEmpty() => b == a;
-        public bool ContainsPoint(int pt) => a <= pt && pt <= b;
+        public bool ContainsPoint(int pt) => a < pt && pt < b;
 
         ////////////////////////////// Other methods //////////////////////////////////
         public int LinearSize() => b - a + 1;
@@ -54,10 +72,10 @@ namespace Maze {
             Trace.Assert(ContainsPoint(pt), "Point is out of segment bounds");
             Trace.Assert(pt != a, "Point on start point");
             Trace.Assert(pt != b, "Point on end point");
-            return new Tuple<Segment, Segment>(new Segment(a, pt, visible), new Segment(pt, b, visible));
+            return new Tuple<Segment, Segment>(new Segment(a, pt, Visible), new Segment(pt, b, Visible));
         }
         //////////////////////////////// IClonable ////////////////////////////////////
-        public object Clone() => new Segment(a, b, visible);
+        public object Clone() => new Segment(a, b, Visible);
 
         ////////////////////////////////// Cast ///////////////////////////////////////
         public static implicit operator Segment((int, int) v) => new Segment(v.Item1, v.Item2);
@@ -86,6 +104,9 @@ namespace Maze {
                 default: throw new ArgumentException("Invalid value");
             }
         }
+
+        public static void Log(string msg) => Tracer.TraceEvent(TraceEventType.Information, 0, msg);
+
         public static void DrawLine(Canvas cnv, int x1, int y1, int x2, int y2) {
             var myLine = new Line();
             myLine.Stroke = System.Windows.Media.Brushes.Black;
