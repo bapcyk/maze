@@ -81,7 +81,7 @@ namespace Alg1 {
             return !seg?.visible?? true;
         }
 
-        private bool IsDoor() => DoorsNumber() != 0;
+        //private bool IsDoor() => DoorsNumber() != 0;
 
         ///////////////////////////////// ToString ////////////////////////////////////
         public override string ToString() {
@@ -100,7 +100,7 @@ namespace Alg1 {
             }
         }
 
-        private int DoorsNumber() => Segments.Where(s => !s.Visible).Count();
+        //private int DoorsNumber() => Segments.Where(s => !s.Visible).Count();
 
         public Segment Bounds() {
             (int a, int b) = (Segments[0].a, Segments.Last().b);

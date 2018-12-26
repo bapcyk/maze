@@ -25,7 +25,7 @@ namespace Maze1 {
             Algorithms.Items.Add("Maze 2");
         }
 
-        private void Algorithms_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+        private async void Algorithms_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             //Alg1.Room room = new Alg1.Room(
             //    new Alg1.Edge(10, new Segment[] { (10, 700) }, Direct.H),
             //    new Alg1.Edge(700, new Segment[] { (10, 400) }, Direct.V),
@@ -35,6 +35,7 @@ namespace Maze1 {
             //room.Draw(Canvas);
             foreach (Alg1.Room r in Alg1.Room.Maze(room)) {
                 r.Draw(Canvas);
+                await Task.Delay(800);
             }
             //(Alg1.Room r1, Alg1.Room r2) = r.Divide();
             //(Alg1.Room r3, Alg1.Room r4) = r1.Divide();
