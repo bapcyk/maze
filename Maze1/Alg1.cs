@@ -37,7 +37,7 @@ namespace Alg1 {
         }
 
         public static Edge WithRandomDoor(int isoline, Segment bounds, Direct dir) {
-            if (bounds.LinearSize() >= (3 * Utils.DOOR)) {
+            if (bounds.LinearSize() > (3 * Utils.DOOR)) {
                 int pt = Utils.Randomizer.Next(bounds.a + Utils.DOOR, bounds.b - 2 * Utils.DOOR);
                 Edge ret = new Edge(isoline,
                     new Segment[]{ new Segment(bounds.a, pt, true),
@@ -51,7 +51,7 @@ namespace Alg1 {
         }
 
         public static Edge WithEndDoor(int isoline, Segment bounds, Direct dir, End end) {
-            if (bounds.LinearSize() >= (2 * Utils.DOOR)) {
+            if (bounds.LinearSize() > (2 * Utils.DOOR)) {
                 Edge ret = null;
                 switch (end) {
                     case End.START:
@@ -86,7 +86,7 @@ namespace Alg1 {
         ///////////////////////////////// ToString ////////////////////////////////////
         public override string ToString() {
             string ss = String.Join(", ", Segments.Select(s => s.ToString()));
-            return $"<Edge {Dir} {Isoline}=>{ss} Edge>";
+            return $"<Edge {Dir} {Isoline} % {ss} Edge>";
         }
 
         //////////////////////////////// ICloneable ///////////////////////////////////
@@ -110,7 +110,7 @@ namespace Alg1 {
 
         private Segment? SegmentWithPoint(int pt) {
             foreach (Segment seg in Segments) {
-                if (seg.ContainsPoint(pt)) return seg;
+                if (seg.ContainsPoint(pt) || pt == seg.a || pt == seg.b) return seg;
             }
             return null;
         }
@@ -122,6 +122,14 @@ namespace Alg1 {
             foreach (Segment seg in Segments) {
                 if (divided) { // already divided, so add to 2nd part
                     segsOfPart2.AddLast(seg);
+                }
+                else if (pt == seg.a) {
+                    segsOfPart2.AddLast(seg);
+                    divided = true;
+                }
+                else if (pt == seg.b) {
+                    segsOfPart1.AddLast(seg);
+                    divided = true;
                 }
                 else if (seg.ContainsPoint(pt)) { // found segment with this point, split it to 2 parts
                     (Segment seg1, Segment seg2) = seg.Split(pt);
@@ -179,6 +187,7 @@ namespace Alg1 {
                 int divSegmentIdx = Utils.Randomizer.Next(spaces.Length);
                 Segment divSpace = spaces[divSegmentIdx];
                 int divPt = Utils.Randomizer.Next(divSpace.a + 1, divSpace.b);
+                Utils.Log($"Random {divPt} in space {divSpace}; edge {this}");
                 return Split(divPt);
             }
         }
@@ -239,6 +248,7 @@ namespace Alg1 {
                     i++;
                 }
             }
+
             EdgeOfDivider[] possibleDividers = PossibleDividers().ToArray();
             if (possibleDividers.Length == 0) {
                 edgeIdx = 0;
