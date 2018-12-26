@@ -91,7 +91,7 @@ namespace Maze {
     }
 
     public static class Utils {
-        public const int DOOR = 20;
+        public const int DOOR = 15;
         public static Random Randomizer = new Random();
         public static SegmentsComparer SegCmp = new SegmentsComparer();
         public static TraceSource Tracer = new TraceSource("Maze");

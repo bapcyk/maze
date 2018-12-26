@@ -222,12 +222,25 @@ namespace Alg1 {
             return $"<Room {es} Room>";
         }
 
+        public string SegmentsImage() {
+            LinkedList<string> ss = new LinkedList<string>();
+            foreach (Edge e in edges) {
+                ss.AddLast($"{e.Dir}: ");
+                foreach (Segment seg in e.Segments) {
+                    if (seg.Visible) ss.AddLast($"{seg.LinearSize()}");
+                }
+            }
+            return String.Join(" ", ss);
+        }
+
         /////////////////////////////// IClonable /////////////////////////////////////
         public object Clone() {
             return new Room(edges.Select(e => (Edge)e.Clone()).ToArray());
         }
 
         /////////////////////////////// Other methods /////////////////////////////////
+        public int Area() => edges[0].Bounds().LinearSize() * edges[1].Bounds().LinearSize();
+
         public void Draw(Canvas cnv) {
             foreach (Edge e in edges) e.Draw(cnv);
         }
@@ -267,13 +280,17 @@ namespace Alg1 {
 
         protected Tuple<Room, Room> Divide() {
             if (!RandomDivider(out int edgeIdx, out int divPt, out Tuple<Edge, Edge> divEdges)) {
+                Utils.Log("RandomDivider returns false");
                 return null;
             }
             else {
                 // random edge for divider was found, so try to unconditionally divide opposite edge
                 int oppEdgeIdx = OppositeEdgeIndex(edgeIdx); // index of edge opposite to edge where divider begins
                 Tuple<Edge, Edge> oppDivEdges = edges[oppEdgeIdx].Split(divPt);
-                if (oppDivEdges == null) return null; // if it's impossible, divide of room is impossible
+                if (oppDivEdges == null) {
+                    Utils.Log("no oppDivEdges");
+                    return null; // if it's impossible, divide of room is impossible
+                }
                 else {
                     Edge[] edges1 = new Edge[4], edges2 = new Edge[4]; // edges of new rooms
                     Edge divider = null;
@@ -285,15 +302,18 @@ namespace Alg1 {
                         if (edgeIdx == 0 || edgeIdx == 3) {
                             // Orientation of divider leads to door at end
                             divider = Edge.WithEndDoor(divPt, nextEdge.Bounds(), nextEdge.Dir, End.END);
+                            Utils.Log($"1: divider={divider}");
                         }
                         else {
                             // Orientation of divider leads to door at start
                             divider = Edge.WithEndDoor(divPt, nextEdge.Bounds(), nextEdge.Dir, End.START);
+                            Utils.Log($"2: divider={divider}");
                         }
                     }
                     else {
                         // no door, so make divider with random placed door
                         divider = Edge.WithRandomDoor(divPt, nextEdge.Bounds(), nextEdge.Dir);
+                        Utils.Log($"3: divider={divider}");
                     }
                     if (divider == null) {
                         // no space for door
@@ -319,9 +339,11 @@ namespace Alg1 {
 
         public static IEnumerable<Room> Maze(Room room) {
             Tuple<Room, Room> dividedRooms = null;
-            Utils.Log($"Maze({room})");
             dividedRooms = room.Divide();
-            if (dividedRooms == null) yield return room;
+            if (dividedRooms == null) {
+                Utils.Log($"Terminal room {room.SegmentsImage()}"); // FIXME there are too big terminals
+                yield return room;
+            }
             else {
                 foreach (var r in Maze(dividedRooms.Item1)) yield return r;
                 foreach (var r in Maze(dividedRooms.Item2)) yield return r;

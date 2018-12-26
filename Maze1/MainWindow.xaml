@@ -5,10 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Maze1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="480" Width="800">
+        x:Name="TopWindow"
+        Title="Maze Generators" Height="480" Width="900">
     <Grid x:Name="Grid1">
-        <Canvas x:Name="Canvas" HorizontalAlignment="Left" Height="384" Margin="0,27,0,0" VerticalAlignment="Top" Width="783"/>
-        <ComboBox x:Name="Algorithms" HorizontalAlignment="Left" VerticalAlignment="Top" Width="783" SelectionChanged="Algorithms_SelectionChanged"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="8*"/>
+            <ColumnDefinition Width="39*"/>
+        </Grid.ColumnDefinitions>
+        <Canvas x:Name="Canvas" HorizontalAlignment="Left" Height="424" Margin="0,27,0,-0.333" VerticalAlignment="Top" Width="783" Grid.ColumnSpan="2"/>
+        <ComboBox x:Name="Algorithms" HorizontalAlignment="Left" VerticalAlignment="Top" Width="890" SelectionChanged="Algorithms_SelectionChanged" Grid.ColumnSpan="2"/>
+        <Label x:Name="DrawnPercent" Content="Label" HorizontalAlignment="Left" Margin="635.674,52,0,0" VerticalAlignment="Top" Width="95" Grid.Column="1"/>
 
     </Grid>
 </Window>
