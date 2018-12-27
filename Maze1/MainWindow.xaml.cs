@@ -27,11 +27,6 @@ namespace Maze1 {
 
         private async void Algorithms_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             Alg1.Room room = Alg1.Room.Initial(10, 10, (int)Canvas.Width - 10, (int)Canvas.Height - 20);
-            //Alg1.Room room = Alg1.Room.Initial(10, 10, 100, 70);
-            //Tuple<Alg1.Room, Alg1.Room> rs = room.Divide();
-            //rs.Item1.Draw(Canvas);
-            //rs.Item2.Draw(Canvas);
-            //return;
             Alg1.Room[] rooms = Alg1.Room.Maze(room).ToArray();
             int roomsNumber = rooms.Length + 1; // +1 for original room
             room.Draw(Canvas);

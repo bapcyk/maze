@@ -338,7 +338,7 @@ namespace Alg1 {
             }
         }
 
-        public static IEnumerable<Room> Maze(Room room) {
+        public static IEnumerable<Room> RecMaze(Room room) {
             Tuple<Room, Room> dividedRooms = null;
             dividedRooms = room.Divide();
             if (dividedRooms == null) {
@@ -346,8 +346,26 @@ namespace Alg1 {
                 yield return room;
             }
             else {
-                foreach (var r in Maze(dividedRooms.Item1)) yield return r;
-                foreach (var r in Maze(dividedRooms.Item2)) yield return r;
+                foreach (var r in RecMaze(dividedRooms.Item1)) yield return r;
+                foreach (var r in RecMaze(dividedRooms.Item2)) yield return r;
+            }
+        }
+
+        public static IEnumerable<Room> Maze(Room room) {
+            Tuple<Room, Room> dividedRooms = null;
+            LinkedList<Room> rooms = new LinkedList<Room>();
+            Room r = null;
+            rooms.AddLast(room);
+            int count = 1;
+            for (int i = 0; i < count; i++) {
+                r = rooms.ElementAt(i);
+                yield return r;
+                dividedRooms = r.Divide();
+                if (dividedRooms != null) {
+                    rooms.AddLast(dividedRooms.Item1);
+                    rooms.AddLast(dividedRooms.Item2);
+                    count += 2;
+                }
             }
         }
 
