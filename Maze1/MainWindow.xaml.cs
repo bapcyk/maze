@@ -25,7 +25,14 @@ namespace Maze1 {
             Algorithms.Items.Add("Maze 2");
         }
 
+        private void ClearMaze() {
+            for (int i = Canvas.Children.Count - 1; i >= 0; i--) {
+                Canvas.Children.Remove(Canvas.Children[i]); // FIXME does not clear all
+            }
+        }
+
         private async void Algorithms_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            ClearMaze();
             Alg1.Room room = Alg1.Room.Initial(10, 10, (int)Canvas.Width - 10, (int)Canvas.Height - 20);
             Alg1.Room[] rooms = Alg1.Room.Maze(room).ToArray();
             int roomsNumber = rooms.Length + 1; // +1 for original room
