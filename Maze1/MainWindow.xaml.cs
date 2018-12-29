@@ -21,8 +21,8 @@ namespace Maze1 {
     public partial class MainWindow : Window {
         public MainWindow() {
             InitializeComponent();
-            Algorithms.Items.Add("Dummy maze 1");
-            Algorithms.Items.Add("Maze 2");
+            Algorithms.Items.Add("Random divided rooms");
+            Algorithms.Items.Add("Random turtle");
         }
 
         private void ClearMaze() {
@@ -51,7 +51,14 @@ namespace Maze1 {
                     break;
 
                 case 1:
-                    ;
+                    ClearMaze();
+                    Alg2.Grid grid = new Alg2.Grid((int)Canvas.Width, (int)Canvas.Height, 10, 10);
+                    grid.Forward(1);
+                    grid.Dir = Side.LEFT;
+                    grid.Forward(2);
+                    grid.Dir = Side.TOP;
+                    grid.Forward(2);
+                    grid.Draw(Canvas);
                     break;
             }
         }
