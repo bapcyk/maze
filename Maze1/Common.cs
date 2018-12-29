@@ -19,10 +19,33 @@ namespace Maze {
         START, END
     }
 
+    public struct Point {
+        public readonly int X;
+        public readonly int Y;
+
+        public Point(int x, int y) {
+            X = x;
+            Y = y;
+        }
+
+        //////////////////////////// Deconstruct to pair //////////////////////////////
+        public void Deconstruct(out int x, out int y) {
+            x = X;
+            y = Y;
+        }
+
+        ////////////////////////////////// ToString ///////////////////////////////////
+        public override string ToString() => $"{X}:{Y}";
+
+        ////////////////////////////////// Cast ///////////////////////////////////////
+        public static implicit operator Point((int, int) v) => new Point(v.Item1, v.Item2);
+
+    }
+
     public struct Segment {
-        public readonly int a;
-        public readonly int b;
-        public readonly bool? visible;
+        public readonly int A;
+        public readonly int B;
+        private readonly bool? visible;
         public bool Visible {
             get {
                 Trace.Assert(visible != null, "Try to get visible attribute without to setup it");
@@ -32,47 +55,49 @@ namespace Maze {
         public Segment(int a, int b) {
             Trace.Assert(a != b, "Empty segment");
             if (b < a) {
-                this.a = b;
-                this.b = a;
+                A = b;
+                B = a;
             } else {
-                this.a = a;
-                this.b = b;
+                A = a;
+                B = b;
             }
-            this.visible = null;
+            visible = null;
         }
 
         public Segment(int a, int b, bool visible) {
             Trace.Assert(a != b, "Empty segment");
             if (b < a) {
-                this.a = b;
-                this.b = a;
+                A = b;
+                B = a;
             } else {
-                this.a = a;
-                this.b = b;
+                A = a;
+                B = b;
             }
             this.visible = visible;
         }
+
         //////////////////////////// Deconstruct to pair //////////////////////////////
-        public void Deconstruct(out int ad, out int bd) {
-            ad = a;
-            bd = b;
+        public void Deconstruct(out int a, out int b) {
+            a = A;
+            b = B;
         }
+
         ////////////////////////////////// ToString ///////////////////////////////////
-        public override string ToString() => $"{a}:{b}";
+        public override string ToString() => $"{A}:{B}";
 
         //////////////////////////////// Predicates ///////////////////////////////////
-        public bool IsNormal() => b > a;
-        public bool IsEmpty() => b == a;
-        public bool ContainsPoint(int pt) => a < pt && pt < b;
+        public bool IsNormal() => B > A;
+        public bool IsEmpty() => B == A;
+        public bool ContainsPoint(int pt) => A < pt && pt < B;
 
         ////////////////////////////// Other methods //////////////////////////////////
-        public int LinearSize() => b - a + 1;
+        public int LinearSize() => B - A + 1;
 
         public Tuple<Segment, Segment> Split(int pt) {
             Trace.Assert(ContainsPoint(pt), "Point is out of segment bounds");
-            Trace.Assert(pt != a, "Point on start point");
-            Trace.Assert(pt != b, "Point on end point");
-            return new Tuple<Segment, Segment>(new Segment(a, pt, Visible), new Segment(pt, b, Visible));
+            Trace.Assert(pt != A, "Point on start point");
+            Trace.Assert(pt != B, "Point on end point");
+            return new Tuple<Segment, Segment>(new Segment(A, pt, Visible), new Segment(pt, B, Visible));
         }
 
         ////////////////////////////////// Cast ///////////////////////////////////////
@@ -82,8 +107,8 @@ namespace Maze {
 
     public class SegmentsComparer : IComparer<Segment> {
         public int Compare(Segment x, Segment y) {
-            int r = x.a.CompareTo(y.a);
-            if (r == 0) r = x.b.CompareTo(y.b);
+            int r = x.A.CompareTo(y.A);
+            if (r == 0) r = x.B.CompareTo(y.B);
             return r;
         }
     }

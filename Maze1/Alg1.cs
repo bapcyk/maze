@@ -37,11 +37,11 @@ namespace Alg1 {
 
         public static Edge WithRandomDoor(int isoline, Segment bounds, Direct dir) {
             if (bounds.LinearSize() > (3 * Utils.DOOR)) {
-                int pt = Utils.Randomizer.Next(bounds.a + Utils.DOOR, bounds.b - 2 * Utils.DOOR);
+                int pt = Utils.Randomizer.Next(bounds.A + Utils.DOOR, bounds.B - 2 * Utils.DOOR);
                 Edge ret = new Edge(isoline,
-                    new Segment[]{ new Segment(bounds.a, pt, true),
+                    new Segment[]{ new Segment(bounds.A, pt, true),
                                    new Segment(pt, pt + Utils.DOOR, false),
-                                   new Segment(pt + Utils.DOOR, bounds.b, true) },
+                                   new Segment(pt + Utils.DOOR, bounds.B, true) },
                     dir);
                 Trace.Assert(ret.Bounds().LinearSize() >= (3 * Utils.DOOR), "Edge with random door is too small");
                 return ret;
@@ -55,14 +55,14 @@ namespace Alg1 {
                 switch (end) {
                     case End.START:
                         ret = new Edge(isoline,
-                            new Segment[] { new Segment(bounds.a, bounds.a + Utils.DOOR, false),
-                                            new Segment(bounds.a + Utils.DOOR, bounds.b, true) },
+                            new Segment[] { new Segment(bounds.A, bounds.A + Utils.DOOR, false),
+                                            new Segment(bounds.A + Utils.DOOR, bounds.B, true) },
                             dir);
                         break;
                     case End.END:
                         ret = new Edge(isoline,
-                            new Segment[] { new Segment(bounds.a, bounds.b - Utils.DOOR, true),
-                                            new Segment(bounds.b - Utils.DOOR, bounds.b, false) },
+                            new Segment[] { new Segment(bounds.A, bounds.B - Utils.DOOR, true),
+                                            new Segment(bounds.B - Utils.DOOR, bounds.B, false) },
                             dir);
                         break;
                 }
@@ -77,7 +77,7 @@ namespace Alg1 {
             Trace.Assert(Bounds().ContainsPoint(pt), "Point out of edge bounds");
             Segment? seg = SegmentWithPoint(pt);
             Trace.Assert(seg != null, "No segment with this point");
-            return !seg?.visible?? true;
+            return !seg?.Visible?? true;
         }
 
         //private bool IsDoor() => DoorsNumber() != 0;
@@ -96,21 +96,21 @@ namespace Alg1 {
         public void Draw(Canvas cnv) {
             foreach (Segment seg in Segments) {
                 Trace.Assert(!seg.IsEmpty(), "Attempt to draw empty segment");
-                if (seg.Visible) Utils.DrawLine(cnv, Isoline, seg.a, seg.b, Dir);
+                if (seg.Visible) Utils.DrawLine(cnv, Isoline, seg.A, seg.B, Dir);
             }
         }
 
         //private int DoorsNumber() => Segments.Where(s => !s.Visible).Count();
 
         public Segment Bounds() {
-            (int a, int b) = (Segments[0].a, Segments.Last().b);
+            (int a, int b) = (Segments[0].A, Segments.Last().B);
             Trace.Assert(b > a, "Abnormal bounds");
             return (a, b);
         }
 
         private Segment? SegmentWithPoint(int pt) {
             foreach (Segment seg in Segments) {
-                if (seg.ContainsPoint(pt) || pt == seg.a || pt == seg.b) return seg;
+                if (seg.ContainsPoint(pt) || pt == seg.A || pt == seg.B) return seg;
             }
             return null;
         }
@@ -123,11 +123,11 @@ namespace Alg1 {
                 if (divided) { // already divided, so add to 2nd part
                     segsOfPart2.AddLast(seg);
                 }
-                else if (pt == seg.a) {
+                else if (pt == seg.A) {
                     segsOfPart2.AddLast(seg);
                     divided = true;
                 }
-                else if (pt == seg.b) {
+                else if (pt == seg.B) {
                     segsOfPart1.AddLast(seg);
                     divided = true;
                 }
@@ -156,19 +156,19 @@ namespace Alg1 {
             int a, b;
             if (Segments.Length == 1) {
                 //Trace.Assert(Segments[0].Visible, $"Edge {this} cannot contain door only");
-                (a, b) = (Segments[0].a + Utils.DOOR, Segments[0].b - Utils.DOOR);
+                (a, b) = (Segments[0].A + Utils.DOOR, Segments[0].B - Utils.DOOR);
                 if (Segments[0].Visible && IsPairOk(a, b)) yield return new Segment(a, b, Segments[0].Visible);
             }
             int i = 0;
             foreach (Segment seg in Segments) {
                 if (!seg.Visible) { i++; continue; } // FIXME ?
                 if (i == 0) {
-                    (a, b) = (seg.a + Utils.DOOR, seg.b - Utils.DOOR);
+                    (a, b) = (seg.A + Utils.DOOR, seg.B - Utils.DOOR);
                     //Trace.Assert(seg.Visible, "Edge's first segment cannot be door");
                     if (IsPairOk(a, b)) yield return new Segment(a, b, seg.Visible);
                 }
                 else if (i == Segments.Length - 1) {
-                    (a, b) = (seg.a + Utils.DOOR, seg.b - Utils.DOOR);
+                    (a, b) = (seg.A + Utils.DOOR, seg.B - Utils.DOOR);
                     //Trace.Assert(seg.Visible, "Edge's last segment cannot be door");
                     if (IsPairOk(a, b)) yield return new Segment(a, b, seg.Visible);
                 }
@@ -187,7 +187,7 @@ namespace Alg1 {
             else {
                 int divSegmentIdx = Utils.Randomizer.Next(spaces.Length);
                 Segment divSpace = spaces[divSegmentIdx];
-                int divPt = Utils.Randomizer.Next(divSpace.a, divSpace.b); // FIXME +1 why?
+                int divPt = Utils.Randomizer.Next(divSpace.A, divSpace.B); // FIXME +1 why?
                 Utils.Log($"Random {divPt} in space {divSpace}; edge {this}");
                 return Split(divPt);
             }
@@ -256,7 +256,7 @@ namespace Alg1 {
                 foreach (Edge edge in edges) {
                     divedges = edge.Divide();
                     if (divedges != null) {
-                        pt = divedges.Item1.Bounds().b;
+                        pt = divedges.Item1.Bounds().B;
                         yield return new EdgeOfDivider(i, pt, divedges);
                     }
                     i++;
