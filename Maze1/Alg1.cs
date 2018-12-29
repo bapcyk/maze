@@ -21,14 +21,13 @@ namespace Alg1 {
     class Edge : ICloneable {
         public int Isoline { get; }
         public Direct Dir { get; }
-        public Segment[] Segments { get; } = new Segment[0];
+        public Segment[] Segments { get; } = new Segment[0]; // FIXME not optimal, better to be Nullable
 
         public Edge(int isoline, Segment[] segs, Direct dir) {
             Trace.Assert(segs.Length != 0, "Empty edge");
-            this.Isoline = isoline;
-            this.Segments = segs.OrderBy(e => e, Utils.SegCmp).ToArray();
-            this.Segments = segs;
-            this.Dir = dir;
+            Isoline = isoline;
+            Segments = segs.OrderBy(e => e, Utils.SegCmp).ToArray(); // XXX creates reordered COPY of segs
+            Dir = dir;
         }
 
         ////////////////////////////// Factories //////////////////////////////////////
@@ -90,7 +89,8 @@ namespace Alg1 {
         }
 
         //////////////////////////////// ICloneable ///////////////////////////////////
-        public object Clone() => new Edge(Isoline, Segments.Select(s => (Segment)s.Clone()).ToArray(), Dir);
+        //public object Clone() => new Edge(Isoline, Segments.Select(s => (Segment)s.Clone()).ToArray(), Dir);
+        public object Clone() => new Edge(Isoline, Segments, Dir);
 
         ///////////////////////////// Other methods ///////////////////////////////////
         public void Draw(Canvas cnv) {

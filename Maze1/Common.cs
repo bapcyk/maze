@@ -19,7 +19,7 @@ namespace Maze {
         START, END
     }
 
-    public struct Segment : ICloneable {
+    public struct Segment {
         public readonly int a;
         public readonly int b;
         public readonly bool? visible;
@@ -74,8 +74,6 @@ namespace Maze {
             Trace.Assert(pt != b, "Point on end point");
             return new Tuple<Segment, Segment>(new Segment(a, pt, Visible), new Segment(pt, b, Visible));
         }
-        //////////////////////////////// IClonable ////////////////////////////////////
-        public object Clone() => new Segment(a, b, Visible);
 
         ////////////////////////////////// Cast ///////////////////////////////////////
         public static implicit operator Segment((int, int) v) => new Segment(v.Item1, v.Item2);

@@ -32,20 +32,28 @@ namespace Maze1 {
         }
 
         private async void Algorithms_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            ClearMaze();
-            Alg1.Room room = Alg1.Room.Initial(10, 10, (int)Canvas.Width - 10, (int)Canvas.Height - 20);
-            Alg1.Room[] rooms = Alg1.Room.Maze(room).ToArray();
-            int roomsNumber = rooms.Length + 1; // +1 for original room
-            room.Draw(Canvas);
-            int i = 1;
-            DrawnPercent.Content = $"Drawn: {i}/{roomsNumber}";
-            foreach (Alg1.Room r in rooms.OrderByDescending(r => r.Area())) {
-                r.Draw(Canvas);
-                await Task.Delay(300);
-                i++;
-                DrawnPercent.Content = $"Drawn: {i}/{roomsNumber}";
+            switch (Algorithms.SelectedIndex) {
+                case 0:
+                    ClearMaze();
+                    Alg1.Room room = Alg1.Room.Initial(10, 10, (int)Canvas.Width - 10, (int)Canvas.Height - 20);
+                    Alg1.Room[] rooms = Alg1.Room.Maze(room).ToArray();
+                    int roomsNumber = rooms.Length + 1; // +1 for original room
+                    room.Draw(Canvas);
+                    int i = 1;
+                    DrawnPercent.Content = $"Drawn: {i}/{roomsNumber}";
+                    foreach (Alg1.Room r in rooms.OrderByDescending(r => r.Area())) {
+                        r.Draw(Canvas);
+                        await Task.Delay(300);
+                        i++;
+                        DrawnPercent.Content = $"Drawn: {i}/{roomsNumber}";
+                    }
+                    DrawnPercent.Content = $"Done: {i}/{roomsNumber}";
+                    break;
+
+                case 1:
+                    ;
+                    break;
             }
-            DrawnPercent.Content = $"Done: {i}/{roomsNumber}";
         }
     }
 }
