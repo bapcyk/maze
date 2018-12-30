@@ -53,11 +53,10 @@ namespace Maze1 {
                 case 1:
                     ClearMaze();
                     Alg2.Grid grid = new Alg2.Grid((int)Canvas.Width, (int)Canvas.Height, 10, 10);
-                    grid.Forward(1);
-                    grid.Dir = Side.LEFT;
-                    grid.Forward(2);
-                    grid.Dir = Side.TOP;
-                    grid.Forward(2);
+                    for (int j=0; j<999; j++) {
+                        grid.Dir = Utils.RandomSide();
+                        grid.Forward(1);
+                    }
                     grid.Draw(Canvas);
                     break;
             }

@@ -11,7 +11,7 @@ namespace Maze {
         H, V
     }
     public enum Side {
-        TOP, RIGHT, BOTTOM, LEFT
+        TOP=1, RIGHT=2, BOTTOM=4, LEFT=8
     }
     public enum CmpResult {
         GT, LT, EQ, LE, GE
@@ -153,6 +153,24 @@ namespace Maze {
             if (d == Direct.H) DrawLine(cnv, a, i, b, i);
             else DrawLine(cnv, i, a, i, b);
         }
+
+        public static Side RandomSide(byte enabled=0xFF) {
+            Array allSides = Enum.GetValues(typeof(Side));
+            List<Side> enabledSides = new List<Side>(allSides.Length);
+            foreach (Side side in allSides) {
+                if (0 != ((byte)side & enabled)) {
+                    enabledSides.Add(side);
+                }
+            }
+            if (enabledSides.Count > 0) {
+                Side[] arr = enabledSides.ToArray();
+                return arr[Randomizer.Next(arr.Length)];
+            }
+            else {
+                throw new ArgumentException($"Value {enabled} disables all Side values");
+            }
+        }
+
     }
 
 }

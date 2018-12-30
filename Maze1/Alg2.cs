@@ -98,9 +98,14 @@ namespace Alg2 {
                 x2 *= SquareSide;
                 y1 *= SquareSide;
                 y2 *= SquareSide;
-                Utils.DrawLine(cnv, x1, y1, x2, y2);
+                Utils.DrawLine(cnv, x1, y1, x2, y2, thickness: 3);
             }
         }
 
+        public bool RandomMove() {
+            return false;
+        }
+
     }
+
 }
