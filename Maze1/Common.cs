@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Numerics;
+using V4 = System.Numerics.Vector4;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
@@ -10,9 +12,11 @@ namespace Maze {
     public enum Direct {
         H, V
     }
+
     public enum Side {
         TOP=1, RIGHT=2, BOTTOM=4, LEFT=8
     }
+
     public enum CmpResult {
         GT, LT, EQ, LE, GE
     }
@@ -115,6 +119,7 @@ namespace Maze {
     }
 
     public static class Utils {
+        public const int SidesNum = 4;
         public const int DOOR = 15;
         public static Random Randomizer = new Random();
         public static SegmentsComparer SegCmp = new SegmentsComparer();
@@ -156,7 +161,7 @@ namespace Maze {
 
         public static Side RandomSide(byte enabled=0xFF) {
             Array allSides = Enum.GetValues(typeof(Side));
-            List<Side> enabledSides = new List<Side>(allSides.Length);
+            List<Side> enabledSides = new List<Side>(SidesNum);
             foreach (Side side in allSides) {
                 if (0 != ((byte)side & enabled)) {
                     enabledSides.Add(side);
@@ -169,6 +174,18 @@ namespace Maze {
             else {
                 throw new ArgumentException($"Value {enabled} disables all Side values");
             }
+        }
+
+        public static Side RandomSide(float[] freqs) {
+            Array allSides = Enum.GetValues(typeof(Side));
+            Trace.Assert(freqs.Length == allSides.Length, $"Frequency array must have {allSides.Length} items");
+            ulong totals = 0;
+            V4[] counters = new V4[] { new V4(0), new V4(0), new V4(0), new V4(0) };
+            for (int i = 0; i < freqs.Length; i++) {
+                ;
+            }
+            // TODO
+            return Side.TOP;
         }
 
     }
