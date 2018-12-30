@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Windows.Media;
 
 namespace Maze {
     public enum Direct {
@@ -130,16 +131,21 @@ namespace Maze {
 
         public static void Log(string msg) => Tracer.TraceEvent(TraceEventType.Information, 0, msg);
 
-        public static void DrawLine(Canvas cnv, int x1, int y1, int x2, int y2) {
-            var myLine = new Line();
-            myLine.Stroke = System.Windows.Media.Brushes.Black;
-            myLine.X1 = x1;
-            myLine.Y1 = y1;
-            myLine.X2 = x2;
-            myLine.Y2 = y2;
-            myLine.HorizontalAlignment = HorizontalAlignment.Left;
-            myLine.VerticalAlignment = VerticalAlignment.Top;
-            myLine.StrokeThickness = 1;
+        public static void DrawLine(Canvas cnv, int x1, int y1, int x2, int y2, int thickness=1, UInt32 color=0) {
+            byte r = (byte)(color >> 16),
+                 g = (byte)((color >> 8) & 0xFF),
+                 b = (byte)(color & 0xFF);
+            SolidColorBrush stroke = new SolidColorBrush(Color.FromRgb(r, g, b));
+            var myLine = new Line {
+                Stroke = stroke,
+                X1 = x1,
+                Y1 = y1,
+                X2 = x2,
+                Y2 = y2,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                StrokeThickness = thickness
+            };
             cnv.Children.Add(myLine);
         }
 
